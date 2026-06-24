@@ -1,0 +1,79 @@
+name: Build and Commit NAPI Bindings
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.node' # Prevent infinite loops when the action commits the .node files!
+      - 'index.js'
+      - 'index.d.ts'
+
+permissions:
+  contents: write # Required so the action can commit files to your repo
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux-x64-gnu
+          - os: macos-latest
+            target: darwin-x64
+          - os: windows-latest
+            target: win32-x64-msvc
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        
+      - name: Install Dependencies
+        run: npm install
+        
+      - name: Build Binary
+        run: npm run build
+        
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bindings-${{ matrix.target }}
+          path: |
+            *.node
+            index.js
+            index.d.ts
+
+  commit-to-repo:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download all compiled artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      # Move all downloaded .node / .js files from the artifacts folder to the root folder
+      - name: Move files to root
+        run: |
+          cp artifacts/bindings-*/*.node . || true
+          cp artifacts/bindings-*/index.js . || true
+          cp artifacts/bindings-*/index.d.ts . || true
+          rm -rf artifacts
+
+      - name: Commit files back to Repository
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: auto-compile rust node bindings [skip ci]"
+          file_pattern: "*.node index.js index.d.ts"
