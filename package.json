@@ -1,16 +1,15 @@
 {
-  "name": "redpiperdb",
+  "name": "piper-redb",
   "version": "1.0.0",
   "main": "index.js",
+  "types": "index.d.ts",
+  "napi": {
+    "name": "piper-redb"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "devDependencies": {
     "@napi-rs/cli": "^3.7.2"
   }

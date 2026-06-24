@@ -21,6 +21,11 @@ jobs:
             target: linux-x64-gnu
           - os: macos-latest
             target: darwin-x64
+          # Add this block for Apple Silicon Macs!
+          - os: macos-latest
+            target: darwin-arm64
+            # We must tell Rust to cross-compile for M1/M2/M3
+            rust-target: aarch64-apple-darwin
           - os: windows-latest
             target: win32-x64-msvc
     runs-on: ${{ matrix.os }}
