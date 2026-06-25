@@ -81,4 +81,3 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: auto-compile rust node bindings [skip ci]"
-          file_pattern: "*.node index.js index.d.ts"
